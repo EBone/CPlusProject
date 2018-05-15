@@ -11,86 +11,11 @@
 
 #include<JuceHeader.h>
 #include "ChorderShifter.h"
-using namespace juce;
-
-StringArray ModNumNames({
-    "c",
-    "csharp",
-    "d",
-    "dhsarp",
-    "e",
-    "f",
-    "fsharp",
-    "g",
-    "gsharp",
-    "a",
-    "asharp",
-    "b",
-});
-
-StringArray StageNames({
-    "I",
-    "II",
-    "III",
-    "IV",
-    "V",
-    "VI",
-    "VII"
-});
-
-StringArray ModeMajMin(
-{
-    "Minor_Mode",
-    "Major_Mode"
-}
-);
-
-StringArray StageMajMin(
-{
-    "Minor_Chord",
-    "Major_Chord"
-}
-);
-int MajstageDis[7] = {
-    0,
-    2,
-    4,
-    5,
-    7,
-    9,
-    11
-};
-//int Majdis[7] = { 0,2,4,5,7,9,11 };
-//int Mindis[7] = { 0,2,3,5,7,8,10 };
+#include "ChordDatas.h"
 
 
-int rightMo(int l, int r,int moshu)
-{
-    jassert(l >= 0 && r >= 0);
-    int temp = l - r;
-    if (temp < 0)
-    {
-        return moshu - (abs(temp) % moshu);
-
-    }
-    else
-    {
-        return temp%moshu;
-    }
-}
-
-
-
-
-struct ChordXX
-{
-    constexpr static int Maj[] = { 0,4,7 };
-    constexpr static int Min[] = { 0,3,7 };
-    /*constexpr static int Maj7[] = { 0,4,7,11,16 };
-    constexpr static int Sus4[] = { 0,5,7,12,17 };
-    constexpr static int Maj79[] = { 0,4,7,11,14 };*/
-
-    static void trans(Array<int>& input, const int* srcChord, const int* targetChord, ModeNum tag,MajstageNum tags)
+ 
+    static void Chordtrans(Array<int>& input, const int* srcChord, const int* targetChord, ModeNum tag,MajstageNum tags)
     {
         //和弦检查统一为C
         
@@ -118,7 +43,6 @@ struct ChordXX
         }
     }
 
-};
 
    //调的转换,并转换和弦级数
 void ChordShifter::PitchModeshift(Array<int>& data,state &src,state &tag)
@@ -187,11 +111,11 @@ void ChordShifter::StageShift(Array<int>&data, state &src, state &tag)
         {
             if (src.stageisMaj)
             {
-                ChordXX::trans(data, ChordXX::Maj, ChordXX::Min,tag.mode,tag.stage);
+                Chordtrans(data, Chords[ChordNames::Maj], Chords[ChordNames::Min],tag.mode,tag.stage);
             }
             else
             {
-                ChordXX::trans(data, ChordXX::Min, ChordXX::Maj,tag.mode,tag.stage);
+                Chordtrans(data, Chords[ChordNames::Min], Chords[ChordNames::Maj],tag.mode,tag.stage);
             }
         }
 
@@ -220,19 +144,33 @@ int ChordShifter::resultfix( Array<int>&data)
 
 void ChordShifter::operator()(Array<int>&data, state &src, state &tag)
 {
-        PitchModeshift(data, src, tag);
-        StageShift(data, src, tag);
-        int Multi = resultfix(data);
-       // if (Multi > 0)
-        //{
-           /* for (int i = 0; i < data.size(); ++i)
-            {
-                data.getReference(i) = data.getReference(i) - Multi * 12;
-            }*/
-        //}
-
+    PitchModeshift(data, src, tag);
+    StageShift(data, src, tag); /*int Multi = resultfix(data);
+        for (int i = 0; i < data.size(); ++i)
+        {
+            data.getReference(i) = data.getReference(i) - Multi * 12;
+        }*/
 }
 
+ void ChordShifter::updownOctave(Array<int>&data, bool updown)
+{
+     if (updown)
+     {
+
+         for (int i = 0; i < data.size(); ++i)
+         {
+             data.getReference(i) += 12;
+         }
+     }
+     else
+     {
+         for (int i = 0; i < data.size(); ++i)
+         {
+             data.getReference(i) -= 12;
+         }
+
+     }
+}
     
 //==============================================================================
 //int main (int argc, char* argv[])
